@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AI Quiz Generator</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-dark bg-primary">
+
+    <div class="container">
+
+        <span class="navbar-brand">
+            🎓 AI-Powered Student Learning Portal
+        </span>
+
+        <a
+            href="{% url 'student_dashboard' %}"
+            class="btn btn-light"
+        >
+            Back to Dashboard
+        </a>
+
+    </div>
+
+</nav>
+
+
+<!-- MAIN CONTENT -->
+
+<div class="container mt-5">
+
+    <div class="text-center mb-4">
+
+        <h2>
+            📝 AI Quiz Generator
+        </h2>
+
+        <p class="text-muted">
+            Enter a topic and let AI generate a quiz for you.
+        </p>
+
+    </div>
+
+
+    <!-- QUIZ GENERATOR -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-body">
+
+            <form
+                method="POST"
+                action="{% url 'quiz' %}"
+            >
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+
+                    <label
+                        for="topic"
+                        class="form-label"
+                    >
+                        Enter Quiz Topic
+                    </label>
+
+                    <input
+                        type="text"
+                        name="topic"
+                        id="topic"
+                        class="form-control"
+                        placeholder="Example: Python, DBMS, Data Structures"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="text-center">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        🤖 Generate Quiz
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ERROR MESSAGE -->
+
+    {% if error %}
+
+        <div class="alert alert-danger">
+
+            {{ error }}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- GENERATED QUIZ -->
+
+    {% if quiz_data %}
+
+        <div class="card shadow">
+
+            <div class="card-header bg-success text-white">
+
+                <h4 class="mb-0">
+                    📝 Your AI Generated Quiz
+                </h4>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <form
+                    method="POST"
+                    action="{% url 'quiz' %}"
+                >
+
+                    {% csrf_token %}
+
+                    {% for question in quiz_data.questions %}
+
+                        <div class="card mb-4">
+
+                            <div class="card-body">
+
+                                <h5>
+                                    Question {{ forloop.counter }}
+                                </h5>
+
+                                <p>
+                                    <strong>
+                                        {{ question.question }}
+                                    </strong>
+                                </p>
+
+
+                                {% for option in question.options %}
+
+                                    <div class="form-check mb-2">
+
+                                        <input
+                                            class="form-check-input"
+                                            type="radio"
+                                            name="question_{{ forloop.parentloop.counter }}"
+                                            value="{{ option }}"
+                                            id="q{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
+                                            required
+                                        >
+
+                                        <label
+                                            class="form-check-label"
+                                            for="q{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
+                                        >
+                                            {{ option }}
+                                        </label>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+
+                    <div class="text-center">
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+                            ✅ Submit Quiz
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+</div>
+
+
+</body>
+
+</html>

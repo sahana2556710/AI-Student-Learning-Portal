@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Study Materials</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body class="bg-light">
+
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-dark bg-primary">
+
+    <div class="container">
+
+        <span class="navbar-brand">
+            🎓 AI-Powered Student Learning Portal
+        </span>
+
+        <a
+            href="{% url 'student_dashboard' %}"
+            class="btn btn-light"
+        >
+            Back to Dashboard
+        </a>
+
+    </div>
+
+</nav>
+
+
+<!-- MAIN CONTENT -->
+
+<div class="container mt-5">
+
+
+    <div class="text-center mb-4">
+
+        <h2>
+            📚 Study Materials
+        </h2>
+
+        <p class="text-muted">
+            Access your notes and learning materials here.
+        </p>
+
+    </div>
+
+
+    <!-- NOTES SECTION -->
+
+    <div class="card shadow mb-4">
+
+        <div class="card-header bg-success text-white">
+
+            <h4 class="mb-0">
+                📄 Notes
+            </h4>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            {% if notes %}
+
+
+                <div class="row g-4">
+
+
+                    {% for note in notes %}
+
+
+                        <div class="col-md-6">
+
+
+                            <div class="card shadow-sm h-100">
+
+
+                                <div class="card-body">
+
+
+                                    <h4>
+                                        📄 {{ note.title }}
+                                    </h4>
+
+
+                                    <p>
+                                        <strong>
+                                            Subject:
+                                        </strong>
+
+                                        {{ note.subject }}
+                                    </p>
+
+
+                                    {% if note.description %}
+
+                                        <p class="text-muted">
+                                            {{ note.description }}
+                                        </p>
+
+                                    {% endif %}
+
+
+                                    <p class="text-muted">
+
+                                        Uploaded on:
+
+                                        {{ note.uploaded_at|date:"d M Y" }}
+
+                                    </p>
+
+
+                                    <a
+                                        href="{{ note.file.url }}"
+                                        target="_blank"
+                                        class="btn btn-primary"
+                                    >
+                                        📖 Open PDF
+                                    </a>
+
+
+                                    <a
+                                        href="{{ note.file.url }}"
+                                        download
+                                        class="btn btn-success"
+                                    >
+                                        ⬇️ Download
+                                    </a>
+
+
+                                </div>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    {% endfor %}
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="text-center">
+
+                    <p class="text-muted">
+                        No notes have been uploaded yet.
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+
+    <!-- PDF MATERIALS SECTION -->
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4 class="mb-0">
+                📑 PDF Materials
+            </h4>
+
+        </div>
+
+
+        <div class="card-body text-center">
+
+            <p class="text-muted">
+
+                PDF learning materials will be available here.
+
+            </p>
+
+
+            <button
+                class="btn btn-secondary"
+                type="button"
+                disabled
+            >
+                PDF Materials Coming Soon
+            </button>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>
