@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Progress Analytics</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+
+        <a class="navbar-brand" href="/">
+            🤖 AI Student Portal
+        </a>
+
+        <a href="/dashboard/" class="btn btn-light">
+            Dashboard
+        </a>
+
+    </div>
+</nav>
+
+
+<div class="container mt-5">
+
+    <h1 class="text-center mb-4">
+        📊 Progress Analytics
+    </h1>
+
+    <h4 class="text-center mb-4">
+        Welcome, {{ student.full_name }}
+    </h4>
+
+
+    <!-- Summary Cards -->
+
+    <div class="row text-center mb-5">
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h5>Total Quizzes</h5>
+
+                    <h2 class="text-primary">
+                        {{ total_quizzes }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h5>Total Score</h5>
+
+                    <h2 class="text-success">
+                        {{ total_score }} / {{ total_questions }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h5>Average Percentage</h5>
+
+                    <h2 class="text-warning">
+                        {{ average_percentage }}%
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Quiz History -->
+
+    <h3 class="mb-3">
+        Quiz Performance
+    </h3>
+
+
+    {% if progress_records %}
+
+    <div class="table-responsive">
+
+        <table class="table table-bordered table-striped">
+
+            <thead class="table-primary">
+
+                <tr>
+
+                    <th>Topic</th>
+
+                    <th>Score</th>
+
+                    <th>Total Questions</th>
+
+                    <th>Percentage</th>
+
+                    <th>Date</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for record in progress_records %}
+
+                <tr>
+
+                    <td>
+                        {{ record.topic }}
+                    </td>
+
+                    <td>
+                        {{ record.score }}
+                    </td>
+
+                    <td>
+                        {{ record.total_questions }}
+                    </td>
+
+                    <td>
+
+                        {% widthratio record.score record.total_questions 100 %}%
+
+                    </td>
+
+                    <td>
+                        {{ record.completed_at|date:"d-m-Y H:i" }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-info text-center">
+
+        No quiz results available yet.
+
+        <br>
+
+        Take a quiz to see your progress here.
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="text-center mt-4">
+
+        <a href="/quiz/" class="btn btn-primary">
+            Take a Quiz
+        </a>
+
+    </div>
+
+</div>
+
+
+<footer class="bg-dark text-white text-center p-3 mt-5">
+
+    © 2026 AI Student Learning Portal
+
+</footer>
+
+
+</body>
+
+</html>

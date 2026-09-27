@@ -1,74 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>AI Chatbot</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        body {
+            background-color: #f5f7fb;
+        }
+
+        .chat-container {
+            max-width: 900px;
+            margin: 50px auto;
+        }
+
+        .chat-card {
+            border: none;
+            border-radius: 15px;
+        }
+
+        .question-box {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .answer-box {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 10px;
+            padding: 20px;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .answer-box strong {
+            color: #1565c0;
+        }
+
+        .answer-box ul,
+        .answer-box ol {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+    </style>
+
 </head>
 
-<body class="bg-light">
 
-<div class="container mt-5">
+<body>
 
-    <div class="card shadow">
 
-        <div class="card-header bg-primary text-white text-center">
-            <h2>🤖 AI Student Chatbot</h2>
-            <p class="mb-0">Ask questions and learn with AI</p>
-        </div>
+<!-- NAVBAR -->
 
-        <div class="card-body">
+<nav class="navbar navbar-dark bg-primary">
 
-            <div class="alert alert-info">
-                Welcome! Ask me anything related to your studies.
-            </div>
+    <div class="container">
 
-            <form method="POST">
+        <span class="navbar-brand">
+            🎓 AI-Powered Student Learning Portal
+        </span>
 
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <label class="form-label">Your Question</label>
-
-                    <textarea
-                        name="question"
-                        class="form-control"
-                        rows="4"
-                        placeholder="Example: Explain DBMS normalization..."
-                        required
-                    ></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100">
-                    🤖 Ask AI
-                </button>
-
-            </form>
-
-            {% if answer %}
-            <div class="mt-4">
-                <h5>🤖 AI Answer</h5>
-
-                <div class="alert alert-success">
-                    {{ answer }}
-                </div>
-            </div>
-            {% endif %}
-
-        </div>
+        <a
+            href="{% url 'student_dashboard' %}"
+            class="btn btn-light"
+        >
+            Back to Dashboard
+        </a>
 
     </div>
 
-    <div class="text-center mt-3">
-        <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
-            ← Back to Dashboard
-        </a>
+</nav>
+
+
+<!-- MAIN CONTAINER -->
+
+<div class="container chat-container">
+
+    <div class="card shadow chat-card">
+
+        <div class="card-body p-4">
+
+
+            <!-- TITLE -->
+
+            <div class="text-center mb-4">
+
+                <h2>
+                    🤖 AI Chatbot
+                </h2>
+
+                <p class="text-muted">
+                    Ask questions and learn easily with AI.
+                </p>
+
+            </div>
+
+
+            <!-- QUESTION FORM -->
+
+            <form
+                method="POST"
+                action="{% url 'chatbot' %}"
+            >
+
+                {% csrf_token %}
+
+
+                <div class="mb-3">
+
+                    <label
+                        for="question"
+                        class="form-label"
+                    >
+                        Your Question
+                    </label>
+
+
+                    <textarea
+                        name="question"
+                        id="question"
+                        class="form-control question-box"
+                        placeholder="Example: Explain DBMS normalization..."
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <div class="d-grid">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        🤖 Ask AI
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <!-- ERROR / ANSWER -->
+
+            {% if answer %}
+
+                <div class="mt-4">
+
+                    <h4>
+                        🤖 AI Answer
+                    </h4>
+
+
+                    <div class="answer-box">
+
+                        {{ answer|linebreaks }}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
     </div>
 
 </div>
 
+
 </body>
+
 </html>

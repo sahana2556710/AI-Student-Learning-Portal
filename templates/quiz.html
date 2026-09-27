@@ -49,6 +49,7 @@
 
 <div class="container mt-5">
 
+
     <div class="text-center mb-4">
 
         <h2>
@@ -127,9 +128,59 @@
     {% endif %}
 
 
+    <!-- QUIZ RESULT -->
+
+    {% if submitted %}
+
+        <div class="card shadow mb-4">
+
+            <div class="card-body text-center">
+
+                <h3>
+                    🎉 Quiz Completed!
+                </h3>
+
+                <h2 class="text-success mt-3">
+                    Your Score: {{ score }} / 5
+                </h2>
+
+                {% if score == 5 %}
+
+                    <p class="text-success">
+                        Excellent! 🌟
+                    </p>
+
+                {% elif score >= 3 %}
+
+                    <p class="text-primary">
+                        Good job! 👍
+                    </p>
+
+                {% else %}
+
+                    <p class="text-warning">
+                        Keep practicing! 📚
+                    </p>
+
+                {% endif %}
+
+                <a
+                    href="{% url 'quiz' %}"
+                    class="btn btn-primary mt-2"
+                >
+                    🔄 Generate New Quiz
+                </a>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
     <!-- GENERATED QUIZ -->
 
-    {% if quiz_data %}
+    {% if quiz_data and not submitted %}
 
         <div class="card shadow">
 
@@ -151,6 +202,13 @@
 
                     {% csrf_token %}
 
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="submit_quiz"
+                    >
+
+
                     {% for question in quiz_data.questions %}
 
                         <div class="card mb-4">
@@ -161,10 +219,13 @@
                                     Question {{ forloop.counter }}
                                 </h5>
 
+
                                 <p>
+
                                     <strong>
                                         {{ question.question }}
                                     </strong>
+
                                 </p>
 
 

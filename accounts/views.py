@@ -1,16 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Student, Note
+from .models import Student, Note, Assignment, Attendance, Progress
+
 from openai import OpenAI
+from groq import Groq
+
 import json
+
+
+# Home Page
+def home(request):
+    return render(request, "home.html")
 
 
 # Student Registration
 def student_register(request):
-
-    if request.method == "GET":
-        storage = messages.get_messages(request)
-        list(storage)
 
     if request.method == "POST":
 
@@ -20,55 +24,17 @@ def student_register(request):
         department = request.POST.get("department")
         semester = request.POST.get("semester")
         password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
 
-        if email:
-            email = email.strip().lower()
+        if Student.objects.filter(email=email).exists():
 
-        if usn:
-            usn = usn.strip()
-
-        if not all([
-            full_name,
-            usn,
-            email,
-            department,
-            semester,
-            password,
-            confirm_password
-        ]):
-            messages.error(
-                request,
-                "Please fill in all the fields."
-            )
-            return render(request, "register.html")
-
-        if password != confirm_password:
-            messages.error(
-                request,
-                "Passwords do not match."
-            )
-            return render(request, "register.html")
-
-        if Student.objects.filter(
-            email__iexact=email
-        ).exists():
             messages.error(
                 request,
                 "Email already registered."
             )
-            return render(request, "register.html")
 
-        if Student.objects.filter(
-            usn=usn
-        ).exists():
-            messages.error(
-                request,
-                "USN already registered."
-            )
-            return render(request, "register.html")
+            return redirect("student_register")
 
-        student = Student(
+        Student.objects.create(
             full_name=full_name,
             usn=usn,
             email=email,
@@ -77,8 +43,6 @@ def student_register(request):
             password=password
         )
 
-        student.save()
-
         messages.success(
             request,
             "Registration successful! Please login."
@@ -86,7 +50,10 @@ def student_register(request):
 
         return redirect("student_login")
 
-    return render(request, "register.html")
+    return render(
+        request,
+        "register.html"
+    )
 
 
 # Student Login
@@ -97,16 +64,10 @@ def student_login(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        if email:
-            email = email.strip().lower()
-
-        if password:
-            password = password.strip()
-
         try:
 
             student = Student.objects.get(
-                email__iexact=email,
+                email=email,
                 password=password
             )
 
@@ -119,10 +80,13 @@ def student_login(request):
 
             messages.error(
                 request,
-                "Invalid Email or Password"
+                "Invalid email or password."
             )
 
-    return render(request, "login.html")
+    return render(
+        request,
+        "login.html"
+    )
 
 
 # Student Dashboard
@@ -131,21 +95,16 @@ def student_dashboard(request):
     if "student_id" not in request.session:
         return redirect("student_login")
 
-    name = request.session.get("student_name")
+    name = request.session.get(
+        "student_name"
+    )
 
     return render(
         request,
         "dashboard.html",
-        {"name": name}
-    )
-
-
-# Home
-def home(request):
-
-    return render(
-        request,
-        "home.html"
+        {
+            "name": name
+        }
     )
 
 
@@ -170,26 +129,63 @@ def chatbot(request):
 
             try:
 
-                client = OpenAI()
+                print("CHATBOT REQUEST RECEIVED")
+                print("QUESTION:", question)
 
-                response = client.responses.create(
-                    model="gpt-5.6",
-                    input=f"""
-You are an AI tutor for students.
+                client = Groq()
 
-Answer the student's question clearly and
-in simple language.
+                response = client.chat.completions.create(
+
+                    model="openai/gpt-oss-20b",
+
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"""
+You are a simple AI tutor for college students.
+
+Answer the student's question in very simple
+and easy-to-understand English.
+
+Follow these rules:
+
+1. Keep the answer short and clear.
+2. Use simple English.
+3. Explain difficult terms in easy words.
+4. Use small examples when helpful.
+5. Use bullet points or numbered points.
+6. Do not give unnecessary information.
+7. Do not give very long tables.
+8. Avoid advanced technical language unless necessary.
+9. For academic questions, give an exam-friendly answer.
+10. Give only the information needed to understand
+the question.
+11. At the end, give a short "In simple words" line.
+12. Do not make the answer unnecessarily long.
 
 Student's question:
+
 {question}
 """
+                        }
+                    ]
                 )
 
-                answer = response.output_text
+                answer = (
+                    response
+                    .choices[0]
+                    .message
+                    .content
+                )
+
+                print("CHATBOT RESPONSE RECEIVED")
 
             except Exception as e:
 
-                print("CHATBOT ERROR:", e)
+                print(
+                    "CHATBOT ERROR:",
+                    repr(e)
+                )
 
                 answer = (
                     "Sorry, something went wrong. "
@@ -198,12 +194,16 @@ Student's question:
 
         else:
 
-            answer = "Please enter a question."
+            answer = (
+                "Please enter a question."
+            )
 
     return render(
         request,
         "chatbot.html",
-        {"answer": answer}
+        {
+            "answer": answer
+        }
     )
 
 
@@ -220,7 +220,9 @@ def study_materials(request):
     return render(
         request,
         "study_materials.html",
-        {"notes": notes}
+        {
+            "notes": notes
+        }
     )
 
 
@@ -232,29 +234,117 @@ def quiz(request):
 
     quiz_data = None
     error = None
+    score = None
+    submitted = False
 
     if request.method == "POST":
 
-        topic = request.POST.get("topic")
+        # Submit Quiz
+        if request.POST.get("action") == "submit_quiz":
 
-        print("QUIZ REQUEST RECEIVED")
-        print("TOPIC:", topic)
+            quiz_data = request.session.get(
+                "quiz_data"
+            )
 
-        if not topic:
+            if not quiz_data:
 
-            error = "Please enter a topic."
+                error = (
+                    "Quiz session expired. "
+                    "Please generate a new quiz."
+                )
 
+            else:
+
+                score = 0
+                submitted = True
+
+                for index, question in enumerate(
+                    quiz_data["questions"],
+                    start=1
+                ):
+
+                    selected_answer = request.POST.get(
+                        f"question_{index}"
+                    )
+
+                    correct_answer = question[
+                        "answer"
+                    ]
+
+                    if selected_answer == correct_answer:
+                        score += 1
+
+                # Get logged-in student
+                student = Student.objects.get(
+                    id=request.session["student_id"]
+                )
+
+                # Get quiz topic
+                topic = request.session.get(
+                    "quiz_topic",
+                    "Quiz"
+                )
+
+                # Save quiz result
+                Progress.objects.create(
+                    student=student,
+                    topic=topic,
+                    score=score,
+                    total_questions=len(
+                        quiz_data["questions"]
+                    )
+                )
+
+                print("QUIZ SUBMITTED")
+                print(
+                    "SCORE:",
+                    score,
+                    "/",
+                    len(
+                        quiz_data["questions"]
+                    )
+                )
+
+        # Generate New Quiz
         else:
 
-            try:
+            topic = request.POST.get(
+                "topic"
+            )
 
-                print("Starting OpenAI quiz generation...")
+            print(
+                "QUIZ REQUEST RECEIVED"
+            )
 
-                client = OpenAI()
+            print(
+                "TOPIC:",
+                topic
+            )
 
-                response = client.responses.create(
-                    model="gpt-5.6",
-                    input=f"""
+            if not topic:
+
+                error = (
+                    "Please enter a topic."
+                )
+
+            else:
+
+                try:
+
+                    print(
+                        "Starting Groq quiz generation..."
+                    )
+
+                    client = Groq()
+
+                    response = client.chat.completions.create(
+
+                        model="openai/gpt-oss-20b",
+
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": f"""
 Create exactly 5 multiple-choice questions
 for a college student on this topic:
 
@@ -286,69 +376,445 @@ Do not use markdown.
 Do not use code blocks.
 Do not write anything except JSON.
 """
-                )
-
-                print("OpenAI response received.")
-
-                output = response.output_text
-
-                print("RAW AI RESPONSE:")
-                print(output)
-
-                if not output:
-                    raise ValueError(
-                        "AI returned an empty response."
+                            }
+                        ]
                     )
 
-                output = output.strip()
-
-                # Remove markdown code block if present
-                if output.startswith("```json"):
-                    output = output[7:]
-
-                elif output.startswith("```"):
-                    output = output[3:]
-
-                if output.endswith("```"):
-                    output = output[:-3]
-
-                output = output.strip()
-
-                print("CLEANED AI RESPONSE:")
-                print(output)
-
-                quiz_data = json.loads(output)
-
-                print("JSON converted successfully.")
-
-                if "questions" not in quiz_data:
-                    raise ValueError(
-                        "The AI response does not contain questions."
+                    print(
+                        "Groq response received."
                     )
 
-                if len(quiz_data["questions"]) != 5:
-                    raise ValueError(
-                        "The AI did not generate exactly 5 questions."
+                    output = (
+                        response
+                        .choices[0]
+                        .message
+                        .content
                     )
 
-                request.session["quiz_data"] = quiz_data
+                    print(
+                        "RAW AI RESPONSE:"
+                    )
 
-                print("QUIZ GENERATED SUCCESSFULLY.")
+                    print(output)
 
-            except Exception as e:
+                    if not output:
 
-                print("QUIZ ERROR:", repr(e))
+                        raise ValueError(
+                            "AI returned an empty response."
+                        )
 
-                error = (
-                    "Quiz Error: "
-                    + str(e)
-                )
+                    output = output.strip()
+
+                    if output.startswith(
+                        "```json"
+                    ):
+
+                        output = output[7:]
+
+                    elif output.startswith(
+                        "```"
+                    ):
+
+                        output = output[3:]
+
+                    if output.endswith(
+                        "```"
+                    ):
+
+                        output = output[:-3]
+
+                    output = output.strip()
+
+                    print(
+                        "CLEANED AI RESPONSE:"
+                    )
+
+                    print(output)
+
+                    quiz_data = json.loads(
+                        output
+                    )
+
+                    print(
+                        "JSON converted successfully."
+                    )
+
+                    if "questions" not in quiz_data:
+
+                        raise ValueError(
+                            "The AI response does not contain questions."
+                        )
+
+                    if len(
+                        quiz_data["questions"]
+                    ) != 5:
+
+                        raise ValueError(
+                            "The AI did not generate exactly 5 questions."
+                        )
+
+                    # Save quiz data
+                    request.session[
+                        "quiz_data"
+                    ] = quiz_data
+
+                    # Save quiz topic
+                    request.session[
+                        "quiz_topic"
+                    ] = topic
+
+                    print(
+                        "QUIZ GENERATED SUCCESSFULLY."
+                    )
+
+                except Exception as e:
+
+                    print(
+                        "QUIZ ERROR:",
+                        repr(e)
+                    )
+
+                    error = (
+                        "Quiz Error: "
+                        + str(e)
+                    )
 
     return render(
         request,
         "quiz.html",
         {
             "quiz_data": quiz_data,
-            "error": error
+            "error": error,
+            "score": score,
+            "submitted": submitted
         }
+    )
+
+
+# PDF Question Answering
+def pdf_qa(request):
+
+    answer = None
+    error = None
+
+    if request.method == "POST":
+
+        pdf_file = request.FILES.get("pdf_file")
+        question = request.POST.get("question")
+
+        if not pdf_file:
+
+            error = "Please select a PDF file."
+
+        elif not question:
+
+            error = "Please enter a question."
+
+        elif not pdf_file.name.lower().endswith(".pdf"):
+
+            error = "Please upload a PDF file only."
+
+        else:
+
+            try:
+
+                from pypdf import PdfReader
+
+                # Read PDF
+                reader = PdfReader(pdf_file)
+
+                text = ""
+
+                for page in reader.pages:
+
+                    page_text = page.extract_text()
+
+                    if page_text:
+
+                        text += page_text + "\n"
+
+                if not text.strip():
+
+                    error = (
+                        "Could not extract text from this PDF."
+                    )
+
+                else:
+
+                    # Keep the text within a reasonable size
+                    text = text[:20000]
+
+                    # Send PDF content and question to Groq AI
+                    client = Groq()
+
+                    response = client.chat.completions.create(
+
+                        model="openai/gpt-oss-20b",
+
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": f"""
+You are an AI tutor.
+
+Answer the student's question using ONLY the information
+provided from the PDF below.
+
+Keep the answer simple, clear and easy to understand.
+
+PDF CONTENT:
+{text}
+
+STUDENT QUESTION:
+{question}
+
+Give a short and useful answer.
+"""
+                            }
+                        ]
+                    )
+
+                    answer = (
+                        response
+                        .choices[0]
+                        .message
+                        .content
+                    )
+
+            except Exception as e:
+
+                error = f"Error: {str(e)}"
+
+    return render(
+        request,
+        "pdf_qa.html",
+        {
+            "answer": answer,
+            "error": error,
+        }
+    )
+
+
+# Assignment Submission
+def assignment(request):
+
+    message = None
+    error = None
+
+    if "student_id" not in request.session:
+
+        return redirect("student_login")
+
+    student_id = request.session.get(
+        "student_id"
+    )
+
+    if request.method == "POST":
+
+        title = request.POST.get(
+            "title"
+        )
+
+        assignment_file = request.FILES.get(
+            "assignment_file"
+        )
+
+        if not title:
+
+            error = (
+                "Please enter the assignment title."
+            )
+
+        elif not assignment_file:
+
+            error = (
+                "Please select an assignment file."
+            )
+
+        else:
+
+            try:
+
+                student = Student.objects.get(
+                    id=student_id
+                )
+
+                Assignment.objects.create(
+                    student=student,
+                    title=title,
+                    file=assignment_file
+                )
+
+                message = (
+                    "Assignment submitted successfully! 🎉"
+                )
+
+            except Student.DoesNotExist:
+
+                error = (
+                    "Student account not found."
+                )
+
+            except Exception as e:
+
+                error = f"Error: {str(e)}"
+
+    return render(
+        request,
+        "assignment.html",
+        {
+            "message": message,
+            "error": error,
+        }
+    )
+
+
+# Attendance
+def attendance(request):
+
+    if "student_id" not in request.session:
+
+        return redirect("student_login")
+
+    student_id = request.session.get(
+        "student_id"
+    )
+
+    try:
+
+        student = Student.objects.get(
+            id=student_id
+        )
+
+        attendance_records = Attendance.objects.filter(
+            student=student
+        ).order_by("-date")
+
+        present_count = attendance_records.filter(
+            status="Present"
+        ).count()
+
+        absent_count = attendance_records.filter(
+            status="Absent"
+        ).count()
+
+        return render(
+            request,
+            "attendance.html",
+            {
+                "attendance_records": attendance_records,
+                "present_count": present_count,
+                "absent_count": absent_count,
+            }
+        )
+
+    except Student.DoesNotExist:
+
+        return redirect("student_login")
+def progress(request):
+
+    if "student_id" not in request.session:
+        return redirect("student_login")
+
+    student_id = request.session.get("student_id")
+
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return redirect("student_login")
+
+    progress_records = Progress.objects.filter(
+        student=student
+    ).order_by("-completed_at")
+
+    total_quizzes = progress_records.count()
+
+    total_score = sum(
+        item.score for item in progress_records
+    )
+
+    total_questions = sum(
+        item.total_questions for item in progress_records
+    )
+
+    if total_questions > 0:
+        average_percentage = round(
+            (total_score / total_questions) * 100,
+            1
+        )
+    else:
+        average_percentage = 0
+
+    return render(
+        request,
+        "progress.html",
+        {
+            "student": student,
+            "progress_records": progress_records,
+            "total_quizzes": total_quizzes,
+            "total_score": total_score,
+            "total_questions": total_questions,
+            "average_percentage": average_percentage,
+        }
+    )
+# Certificate Generation
+from django.utils import timezone
+
+def certificate(request):
+    if "student_id" not in request.session:
+        return redirect("student_login")
+
+    try:
+        student = Student.objects.get(
+            id=request.session["student_id"]
+        )
+    except Student.DoesNotExist:
+        return redirect("student_login")
+
+    course = request.GET.get("course", "")
+
+    return render(request, "certificate.html", {
+        "student": student,
+        "course": course,
+        "date": timezone.localdate(),
+    })
+
+# Leaderboard
+def leaderboard(request):
+    if "student_id" not in request.session:
+        return redirect("student_login")
+
+    students = Student.objects.all()
+    leaderboard_data = []
+
+    for student in students:
+        records = Progress.objects.filter(student=student)
+
+        total_score = sum(item.score for item in records)
+        total_questions = sum(
+            item.total_questions for item in records
+        )
+
+        if total_questions > 0:
+            leaderboard_data.append({
+                "name": student.full_name,
+                "total_score": total_score,
+                "total_questions": total_questions,
+                "percentage": round(
+                    total_score / total_questions * 100, 1
+                ),
+            })
+
+    leaderboard_data.sort(
+        key=lambda item: item["total_score"],
+        reverse=True
+    )
+
+    for rank, item in enumerate(leaderboard_data, start=1):
+        item["rank"] = rank
+
+    return render(
+        request,
+        "leaderboard.html",
+        {"leaderboard": leaderboard_data}
     )

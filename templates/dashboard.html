@@ -1,197 +1,232 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Student Dashboard</title>
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+        rel="stylesheet">
 
+    <style>
+        body {
+            background-color: #f4f7fb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #0d6efd;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            white-space: normal;
+        }
+
+        .page-title {
+            color: #164b8b;
+            font-weight: bold;
+        }
+
+        .feature-card {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            min-height: 170px;
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-card h4 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #6c757d;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+
+        .feature-card .btn {
+            width: 100%;
+        }
+
+        @media (max-width: 576px) {
+            .navbar .container {
+                gap: 10px;
+            }
+
+            .navbar-brand {
+                font-size: 16px;
+                max-width: 75%;
+            }
+
+            .navbar .btn {
+                font-size: 13px;
+                padding: 6px 10px;
+            }
+
+            .page-title {
+                font-size: 23px;
+            }
+
+            .feature-card {
+                min-height: 150px;
+            }
+
+            .feature-card h4 {
+                font-size: 18px;
+            }
+
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
 </head>
 
+<body>
 
-<body class="bg-light">
-
-
-<!-- NAVBAR -->
-
-<nav class="navbar navbar-dark bg-primary">
-
+<!-- Navbar -->
+<nav class="navbar navbar-dark">
     <div class="container">
-
-        <span class="navbar-brand">
+        <a class="navbar-brand" href="/dashboard/">
             🎓 AI-Powered Student Learning Portal
-        </span>
-
-        <a
-            href="{% url 'student_logout' %}"
-            class="btn btn-light"
-        >
-            Logout
         </a>
 
+        <a href="/logout/" class="btn btn-light">
+            Logout
+        </a>
     </div>
-
 </nav>
 
+<!-- Dashboard -->
+<div class="container mt-5 mb-5">
 
-<!-- MAIN CONTENT -->
+    <h2 class="text-center page-title mb-3">
+        Welcome, {{ name }}!
+    </h2>
 
-<div class="container mt-5">
-
-
-    <div class="text-center mb-4">
-
-        <h2>
-            Welcome, {{ name }}! 👋
-        </h2>
-
-        <p class="text-muted">
-            Welcome to your AI-Powered Student Learning Portal
-        </p>
-
-    </div>
-
+    <p class="text-center text-muted mb-4">
+        Explore your learning tools and track your progress.
+    </p>
 
     <div class="row g-4">
 
-
-        <!-- AI CHATBOT -->
-
-        <div class="col-md-6">
-
-            <div class="card shadow h-100">
-
-                <div class="card-body text-center">
-
-                    <h3>
-                        🤖 AI Student Chatbot
-                    </h3>
-
-                    <p class="text-muted">
-                        Ask questions and get help with your studies using AI.
-                    </p>
-
-                    <a
-                        href="{% url 'chatbot' %}"
-                        class="btn btn-primary"
-                    >
-                        🤖 Ask AI
-                    </a>
-
-                </div>
-
+        <!-- AI Chatbot -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>🤖 AI Chatbot</h4>
+                <p>Ask questions and get help from AI.</p>
+                <a href="/chatbot/" class="btn btn-primary">
+                    Ask AI
+                </a>
             </div>
-
         </div>
 
-
-        <!-- STUDY MATERIALS -->
-
-        <div class="col-md-6">
-
-            <div class="card shadow h-100">
-
-                <div class="card-body text-center">
-
-                    <h3>
-                        📚 Study Materials
-                    </h3>
-
-                    <p class="text-muted">
-                        Access notes and learning materials.
-                    </p>
-
-                    <a
-                        href="{% url 'study_materials' %}"
-                        class="btn btn-success"
-                    >
-                        Study Materials
-                    </a>
-
-                </div>
-
+        <!-- Study Materials -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>📚 Study Materials</h4>
+                <p>Access your study notes and materials.</p>
+                <a href="/study-materials/" class="btn btn-success">
+                    Study Materials
+                </a>
             </div>
-
         </div>
 
-
-        <!-- QUIZ -->
-
-        <div class="col-md-6">
-
-            <div class="card shadow h-100">
-
-                <div class="card-body text-center">
-
-                    <h3>
-                        📝 Quiz
-                    </h3>
-
-                    <p class="text-muted">
-                        Test your knowledge with AI-generated quizzes.
-                    </p>
-
-                    <a
-                        href="{% url 'quiz' %}"
-                        class="btn btn-warning"
-                    >
-                        📝 Take Quiz
-                    </a>
-
-                </div>
-
+        <!-- Quiz -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>📝 Quiz</h4>
+                <p>Test your knowledge with AI-generated quizzes.</p>
+                <a href="/quiz/" class="btn btn-warning">
+                    Take Quiz
+                </a>
             </div>
-
         </div>
 
-
-        <!-- PROGRESS -->
-
-        <div class="col-md-6">
-
-            <div class="card shadow h-100">
-
-                <div class="card-body text-center">
-
-                    <h3>
-                        📊 My Progress
-                    </h3>
-
-                    <p class="text-muted">
-                        Track your learning progress and performance.
-                    </p>
-
-                    <button
-                        class="btn btn-info"
-                        type="button"
-                    >
-                        View Progress
-                    </button>
-
-                </div>
-
+        <!-- Progress -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>📊 My Progress</h4>
+                <p>Track your learning progress and performance.</p>
+                <a href="/progress/" class="btn btn-info">
+                    View Progress
+                </a>
             </div>
-
         </div>
 
+        <!-- Assignment -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>📥 Assignment</h4>
+                <p>Upload and submit your assignments.</p>
+                <a href="/assignment/" class="btn btn-secondary">
+                    Submit Assignment
+                </a>
+            </div>
+        </div>
+
+        <!-- Attendance -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>🗓️ Attendance</h4>
+                <p>View your attendance records.</p>
+                <a href="/attendance/" class="btn btn-dark">
+                    View Attendance
+                </a>
+            </div>
+        </div>
+
+        <!-- PDF Question Answering -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>📄 PDF Question Answering</h4>
+                <p>Upload a PDF and ask questions about it using AI.</p>
+                <a href="/pdf-qa/" class="btn btn-outline-primary">
+                    Ask Questions
+                </a>
+            </div>
+        </div>
+
+        <!-- Certificate -->
+        <div class="col-12 col-md-6">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>🏆 Certificate</h4>
+                <p>Generate and download your learning certificate.</p>
+                <a href="/certificate/" class="btn btn-success">
+                    Generate Certificate
+                </a>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="col-12 col-md-6 mx-auto">
+            <div class="card feature-card shadow-sm text-center p-4 d-flex">
+                <h4>🏆 Leaderboard</h4>
+                <p>View student rankings and scores.</p>
+                <a href="/leaderboard/" class="btn btn-primary">
+                    View Leaderboard
+                </a>
+            </div>
+        </div>
 
     </div>
-
-
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
 </html>

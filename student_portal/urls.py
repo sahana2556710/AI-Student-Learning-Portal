@@ -13,6 +13,12 @@ from accounts.views import (
     chatbot,
     study_materials,
     quiz,
+    pdf_qa,
+    assignment,
+    attendance,
+     progress,
+    certificate,
+    leaderboard,
 )
 
 
@@ -21,6 +27,40 @@ urlpatterns = [
     path(
         'admin/',
         admin.site.urls
+    ),
+    path(
+    'certificate/',
+    certificate,
+    name='certificate'
+),
+
+    path(
+    'leaderboard/',
+    leaderboard,
+    name='leaderboard'
+),
+
+    path(
+        'pdf-qa/',
+        pdf_qa,
+        name='pdf_qa'
+    ),
+
+    path(
+        'assignment/',
+        assignment,
+        name='assignment'
+    ),
+
+    path(
+    'progress/',
+    progress,
+    name='progress'
+),
+    path(
+        'attendance/',
+        attendance,
+        name='attendance'
     ),
 
     path(
@@ -70,6 +110,7 @@ urlpatterns = [
         quiz,
         name='quiz'
     ),
+
 ]
 
 

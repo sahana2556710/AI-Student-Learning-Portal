@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Question Answering</title>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-body">
+
+            <h2 class="text-center mb-4">
+                📄 PDF Question Answering
+            </h2>
+
+            <p class="text-center text-muted">
+                Upload a PDF and ask questions about its content.
+            </p>
+
+            <form method="POST" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Select PDF
+                    </label>
+
+                    <input
+                        type="file"
+                        name="pdf_file"
+                        class="form-control"
+                        accept=".pdf"
+                        required
+                    >
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Ask your question
+                    </label>
+
+                    <textarea
+                        name="question"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Example: What is the main topic of this PDF?"
+                        required
+                    ></textarea>
+
+                </div>
+
+                <div class="text-center">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        🤖 Ask AI
+                    </button>
+
+                </div>
+
+            </form>
+
+            {% if answer %}
+
+            <div class="alert alert-success mt-4">
+
+                <h5>🤖 AI Answer</h5>
+
+                <hr>
+
+                {{ answer|linebreaks }}
+
+            </div>
+
+            {% endif %}
+
+            {% if error %}
+
+            <div class="alert alert-danger mt-4">
+
+                {{ error }}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
